@@ -1,0 +1,3 @@
+Clevis is a framework for automated decryption. It allows you to encrypt
+data using sophisticated unlocking policies which enable decryption to
+occur automatically.
