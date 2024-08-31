@@ -13,7 +13,23 @@ building block for other packages. For example, see the clevis-luks
 and clevis-dracut packages for automatic root volume unlocking of LUKSv1
 volumes during early boot.
 
-## Build instructions
+## Docker Based Build Instructions
+
+The following instructions show how to build this package using the included Dockerfile.
+
+Docker needs to be installed and running before running the make command.
+
+The final artifact will be copied to a new ./pkgs directory
+
+```bash
+# Clone the git repo
+git clone https://github.com/greycubesgav/slackbuild-clevis
+cd slackbuild-clevis
+make docker-artifact-build
+# Slackware package will be created in ./pkgs
+```
+
+## Manual Build Instructions Under Slackware
 
 The following instructs show how to build the package locally under Slackware.
 
@@ -32,5 +48,5 @@ wget $(sed -n 's/DOWNLOAD="\(.*\)"/\1/p' clevis.info)
 Once the package is built, it can be installed with
 
 ```bash
-upgradepkg --install-new --reinstall /tmp/clevis-20-x86_64-1_SBo.tgz
+upgradepkg --install-new --reinstall /pkgs/clevis-*.tgz
 ```

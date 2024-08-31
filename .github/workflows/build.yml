@@ -1,0 +1,33 @@
+name: Build Packages
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  DOCKER_USER: greycubesgav
+  DOCKER_IMAGE_NAME: slackbuild-jose
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: get version
+        run: |
+          release_version=$(grep VERSION ./*.info | sed -E 's|VERSION="([0-9.]+)"|\1|')
+          echo "Building release version $release_version"
+          echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
+        shell: bash
+
+      - name: build
+        run: make docker-artifact-build
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: slackbuild-pkgs
+          path: pkgs/*
