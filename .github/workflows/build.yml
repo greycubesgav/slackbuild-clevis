@@ -51,8 +51,8 @@ jobs:
       - name: build
         run: |
           echo "Building version clevis v${{ env.clevis_VERSION }} build ${{ env.BUILD_VERSION }} for slackware v15.0 and vCurrent"
-          make BUILD=${{ env.BUILD_VERSION }} docker-artifact-build-aclemons-${{ env.clevis_VERSION }}-current
-          make BUILD=${{ env.BUILD_VERSION }} docker-artifact-build-aclemons-${{ env.clevis_VERSION }}-15.0
+          make BUILD=${{ env.BUILD_VERSION }} docker-artifact-build-aclemons-current
+          make BUILD=${{ env.BUILD_VERSION }} docker-artifact-build-aclemons-15.0
         shell: bash
 
       - name: Upload Build Artifact
