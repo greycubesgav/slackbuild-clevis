@@ -29,12 +29,20 @@ jobs:
     - name: Display structure of downloaded packages
       run: ls -R pkgs/
 
-    - name: Create new release and upload packages
-      uses: svenstaro/upload-release-action@v2
+    - name: Debug Inputs
+      run: |
+        echo "Received clevis_version=${{ needs.build.outputs.clevis_version }}"
+        echo "Received build_version=${{ needs.build.outputs.build_version }}"
+      shell: bash
+
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v2
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: pkgs/*
-        tag: ${{ github.ref }}
-        overwrite: true
-        file_glob: true
+        tag_name: v${{ needs.build.outputs.clevis_version }}-${{ needs.build.outputs.build_version }}
+        name: Release clevis v${{ needs.build.outputs.clevis_version }} - Build ${{ needs.build.outputs.build_version }}
         draft: true
+        files: pkgs/*
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

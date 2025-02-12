@@ -1,33 +1,64 @@
-name: Build Packages
+name: Build All Packages
 
 on:
   workflow_dispatch:
   workflow_call:
+    outputs:
+      clevis_version:
+        description: The clevis version we're building
+        value: ${{ jobs.build.outputs.clevis_version }}
+      build_version:
+        description: The build date
+        value: ${{ jobs.build.outputs.build_version }}
 
 env:
   DOCKER_USER: greycubesgav
-  DOCKER_IMAGE_NAME: slackbuild-jose
+  DOCKER_IMAGE_NAME: slackbuild-clevis
 
 jobs:
   build:
     name: build
     runs-on: ubuntu-latest
+    outputs:
+      clevis_version: ${{ env.clevis_VERSION }}
+      build_version: ${{ steps.version-setter.outputs.build_version }}
     steps:
       - name: checkout code
         uses: actions/checkout@v4
 
       - name: get version
+        id: version-setter
         run: |
-          release_version=$(grep VERSION ./*.info | sed -E 's|VERSION="([0-9.]+)"|\1|')
-          echo "Building release version $release_version"
-          echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
+          clevis_version=$(awk -F'"' '/^VERSION=/{print $2}' ./src/clevis/*.info)
+          build_version=$(date +%Y%m%d)
+          echo "Building release clevis v${clevis_version} build ${build_version}"
+          echo "clevis_version=${clevis_version}" >> "$GITHUB_OUTPUT"
+          echo "build_version=${build_version}" >> "$GITHUB_OUTPUT"
+          echo "clevis_VERSION=$clevis_version" >> $GITHUB_ENV
+          echo "BUILD_VERSION=$build_version" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Debug Outputs
+        run: |
+          echo "clevis_VERSION=${{ env.clevis_VERSION }}"
+          echo "BUILD_VERSION=${{ env.BUILD_VERSION }}"
+          echo "outputs.clevis_version=${{ steps.version-setter.outputs.clevis_version }}"
+          echo "outputs.build_version=${{ steps.version-setter.outputs.build_version }}"
+          echo "catting output"
+          cat "$GITHUB_OUTPUT"
         shell: bash
 
       - name: build
-        run: make docker-artifact-build
+        run: |
+          echo "Building version clevis v${{ env.clevis_VERSION }} build ${{ env.BUILD_VERSION }} for slackware v15.0 and vCurrent"
+          make BUILD=${{ env.BUILD_VERSION }} docker-artifact-build-aclemons-${{ env.clevis_VERSION }}-current
+          make BUILD=${{ env.BUILD_VERSION }} docker-artifact-build-aclemons-${{ env.clevis_VERSION }}-15.0
+        shell: bash
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: slackbuild-pkgs
           path: pkgs/*
+
+

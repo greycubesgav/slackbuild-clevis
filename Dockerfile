@@ -1,39 +1,25 @@
-FROM greycubesgav/slackware-docker-base:latest AS builder
+ARG DOCKER_FULL_BASE_IMAGE_NAME=greycubesgav/slackware-docker-base:aclemons-current
+FROM ${DOCKER_FULL_BASE_IMAGE_NAME} AS builder
 
-# Set our prepended build artifact tag and build dir
-ENV TAG='_GG'
+ARG TAG='_SL-CUR_GG' VERSION=20 BUILD=1
 
 # Install the dependancies binaries for the build
-ARG JOSE_VESION=jose-12-x86_64-1_GG.tgz
-WORKDIR /root/jose/
-RUN wget --no-check-certificate https://github.com/greycubesgav/slackbuild-jose/releases/download/main/${JOSE_VESION}
-RUN upgradepkg --install-new --reinstall ${JOSE_VESION}
 
-#WORKDIR /root/jq/
-#RUN wget --no-check-certificate http://www.slackware.com/~alien/slackbuilds/jq/pkg64/15.0/jq-1.6-x86_64-1alien.txz && \
-#wget --no-check-certificate http://www.slackware.com/~alien/slackbuilds/jq/pkg64/15.0/jq-1.6-x86_64-1alien.txz.md5 && \
-#md5sum -c jq-1.6-x86_64-1alien.txz.md5
-# RUN upgradepkg --install-new --reinstall jq-1.6-x86_64-1alien.txz
+COPY src/jose/jose-*${TAG}.tgz /root/jose/
+RUN installpkg /root/jose/jose-*${TAG}.tgz
+RUN jose alg
 
-#--------------------------------------------------------------
-# Build Slackware Package
-#--------------------------------------------------------------
 # Copy over the build files
-COPY LICENSE *.info *.SlackBuild README slack-desc /root/build/
-
-# Grab the source and check the md5
+COPY src/clevis/clevis-${VERSION}.tar.xz LICENSE src/clevis/clevis.info src/clevis/clevis.SlackBuild src/clevis/README src/clevis/slack-desc /root/build/
 WORKDIR /root/build/
-RUN wget --no-check-certificate $(sed -n 's/DOWNLOAD="\(.*\)"/\1/p' *.info)
-RUN export pkgname=$(grep 'DOWNLOAD=' *.info| sed 's|.*/||;s|"||g') \
-&& export pkgmd5sum=$(sed -n 's/MD5SUM="\(.*\)"/\1/p' *.info) \
-&& echo "$pkgmd5sum  $pkgname" > "${pkgname}.md5" \
-&& md5sum -c "${pkgname}.md5"
-
+# Update the jose.info file to match the version we're building
+RUN sed -i "s|VERSION=.*|VERSION=\"${VERSION}\"|" clevis.info && export MD5SUM=$(md5sum jose-${VERSION}.tar.xz | cut -d ' ' -f 1) && sed -i "s|_MD5SUM_|${MD5SUM}|" clevis.info
 # Build the package
-RUN ./*.SlackBuild
+RUN VERSION="$VERSION" TAG="$TAG" BUILD="$BUILD" ./clevis.SlackBuild
+RUN installpkg /tmp/clevis-${VERSION}*.tgz
 
-#ENTRYPOINT [ "bash" ]
+ENTRYPOINT [ "bash" ]
 
 # Create a clean image with only the artifact
 FROM scratch AS artifact
-COPY --from=builder /tmp/*.tgz .
+COPY --from=builder /tmp/clevis-*.tgz .
