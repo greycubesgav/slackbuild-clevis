@@ -84,3 +84,20 @@ docker-artifact-build:
 		for f in ./pkgs/*_15.0_*.t?z; do cp "$$f" "$${f/_15.0_/_unraid-v6.x.x_}"; done \
 	fi
 
+# -------------------------------------------------------------------------------------------------------
+#  Dependencies Installation
+# -------------------------------------------------------------------------------------------------------
+
+update-dependencies-jose:
+	curl -s https://api.github.com/repos/greycubesgav/slackbuild-jose/releases/latest \
+	| grep "browser_download_url.*" | grep -v 'unraid-v'\
+	| cut -d '"' -f 4 \
+	| xargs -n1 wget -P src/jose/
+
+update-dependencies-luksmeta:
+	curl -s https://api.github.com/repos/greycubesgav/slackbuild-luksmeta/releases/latest \
+	| grep "browser_download_url.*" | grep -v 'unraid-v'\
+	| cut -d '"' -f 4 \
+	| xargs -n1 wget -P src/jose/
+
+update-dependencies: update-dependencies-jose update-dependencies-luksmeta
