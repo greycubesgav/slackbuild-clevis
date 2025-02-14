@@ -8,7 +8,6 @@ SOURCE_VERSION=20
 SOURCE_BUILD_TAG=_$(DOCKER_BASE_IMAGE_VERSION)_GG
 # DOCKER TAG Image Settings
 DOCKER_TARGET_IMAGE_NAME=slackbuild-clevis
-DOCKER_TARGET_TAG=?
 DOCKER_PLATFORM=linux/amd64
 # Add NOCACHE='--no-cache' to force a rebuild
 NOCACHE=
@@ -18,14 +17,14 @@ BUILD=$(shell date +%Y%m%d)
 SHELL := /usr/bin/env bash
 
 # By default, build package versions and variants
-default: docker-artifact-build-aclemons-current docker-artifact-build-aclemons-15.0
+default: docker-artifact-build-current docker-artifact-build-15.0
 
 # Build the package against slackware-current (libcrypto.so.3) and tag the package appropriately
-docker-image-build-aclemons-current:
+docker-image-build-current:
 	$(MAKE) docker-image-build DOCKER_BASE_IMAGE_VERSION='current' BUILD='$(BUILD)'
 
 # Build the package against slackware-v15 (libcrypto.so.1.1) and tag the package appropriately
-docker-image-build-aclemons-15.0:
+docker-image-build-15.0:
 	$(MAKE) docker-image-build DOCKER_BASE_IMAGE_VERSION='15.0' BUILD='$(BUILD)'
 
 # Build the package using the variables set in the Makefile
@@ -41,10 +40,10 @@ docker-image-build:
 		--build-arg BUILD=$(BUILD) \
 		--tag $(DOCKER_FULL_TARGET_IMAGE_NAME) .
 
-docker-image-run-aclemons-current:
+docker-image-run-current:
 	$(MAKE) docker-image-run DOCKER_BASE_IMAGE_VERSION='current'
 
-docker-image-run-aclemons-15.0:
+docker-image-run-15.0:
 	$(MAKE) docker-image-run  DOCKER_BASE_IMAGE_VERSION='15.0'
 
 
@@ -60,10 +59,10 @@ docker-image-run:
 #  Package Extraction
 # -------------------------------------------------------------------------------------------------------
 
-docker-artifact-build-aclemons-current:
+docker-artifact-build-current:
 	$(MAKE) docker-artifact-build DOCKER_BASE_IMAGE_VERSION='current' BUILD='$(BUILD)'
 
-docker-artifact-build-aclemons-15.0:
+docker-artifact-build-15.0:
 	$(MAKE) docker-artifact-build DOCKER_BASE_IMAGE_VERSION='15.0' BUILD='$(BUILD)'
 
 docker-artifact-build:
